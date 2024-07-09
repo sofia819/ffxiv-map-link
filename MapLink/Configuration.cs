@@ -1,16 +1,17 @@
-﻿using Dalamud.Configuration;
-using Dalamud.Plugin;
-using System;
+﻿using System;
+using System.Collections.Generic;
+using Dalamud.Configuration;
 
-namespace SamplePlugin;
+namespace MapLink;
 
 [Serializable]
 public class Configuration : IPluginConfiguration
 {
-    public int Version { get; set; } = 0;
-
     public bool IsConfigWindowMovable { get; set; } = true;
-    public bool SomePropertyToBeSavedAndWithADefault { get; set; } = true;
+
+    public Dictionary<string, bool> Players { get; set; } = new() { { "Sol Faye", false } };
+
+    public int Version { get; set; } = 0;
 
     // the below exist just to make saving less cumbersome
     public void Save()

@@ -1,0 +1,11 @@
+{
+  "Author": "sofia819",
+  "Name": "MapLink",
+  "Punchline": "Automatically links map coordinates from chat",
+  "Description": "Automatically links map coordinates from chat",
+  "ApplicableVersion": "any",
+  "Tags": [
+    "map",
+    "link"
+  ]
+}
