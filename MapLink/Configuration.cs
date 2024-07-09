@@ -9,7 +9,7 @@ public class Configuration : IPluginConfiguration
 {
     public bool IsConfigWindowMovable { get; set; } = true;
 
-    public Dictionary<string, bool> Players { get; set; } = new() { { "Sol Faye", false } };
+    public Dictionary<string, bool> Players { get; set; } = new();
 
     public int Version { get; set; } = 0;
 
