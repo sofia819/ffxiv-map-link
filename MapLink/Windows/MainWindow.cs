@@ -14,7 +14,7 @@ public class MainWindow : Window, IDisposable
     // So that the user will see "My Amazing Window" as window title,
     // but for ImGui the ID is "My Amazing Window##With a hidden ID"
     public MainWindow(Plugin plugin)
-        : base("Map Link##With a hidden ID", ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoScrollbar)
+        : base("Map Link##With a hidden ID", ImGuiWindowFlags.NoResize)
     {
         SizeConstraints = new WindowSizeConstraints
         {
@@ -30,11 +30,23 @@ public class MainWindow : Window, IDisposable
 
     public override void Draw()
     {
+        var isPluginEnabled = Configuration.IsPluginEnabled;
+
+        ImGui.PushStyleColor(ImGuiCol.CheckMark, new Vector4(0, 128, 0, 255));
+        if (ImGui.Checkbox("Enabled", ref isPluginEnabled))
+        {
+            Configuration.IsPluginEnabled = isPluginEnabled;
+            Configuration.Save();
+        }
+
+        ImGui.PopStyleColor();
+
         ImGui.Text("Players");
         foreach (var player in Configuration.Players)
-            ImGui.BulletText($"{player.Key}");
+            if (player.Value)
+                ImGui.BulletText($"{player.Key}");
 
-        if (ImGui.Button("Show Settings")) Plugin.ToggleConfigUI();
+        if (ImGui.Button("Settings")) Plugin.ToggleConfigUI();
 
         ImGui.Spacing();
     }

@@ -13,9 +13,8 @@ namespace MapLink;
 
 public sealed class Plugin : IDalamudPlugin
 {
-    private const string MapLinkMainCommand = "/maplink";
-    private const string MapLinkOnArg = "on";
-    private const string MapLinkOffArg = "off";
+    private const string MapLinkMainCommand = "/maplink menu";
+    private const string MapLinkToggleCommand = "/maplink";
 
     public readonly WindowSystem WindowSystem = new("MapLink");
 
@@ -31,15 +30,15 @@ public sealed class Plugin : IDalamudPlugin
 
         CommandManager.AddHandler(MapLinkMainCommand, new CommandInfo(OnCommand)
         {
+            HelpMessage = "Toggle on/off"
+        });
+        CommandManager.AddHandler(MapLinkToggleCommand, new CommandInfo(OnCommand)
+        {
             HelpMessage = "Display main menu"
         });
-        CommandManager.DispatchCommand(MapLinkMainCommand, MapLinkOnArg, new CommandInfo(OnCommand)
+        CommandManager.AddHandler($"{MapLinkToggleCommand} Player Mame", new CommandInfo(OnCommand)
         {
-            HelpMessage = "Toggle on"
-        });
-        CommandManager.DispatchCommand(MapLinkMainCommand, MapLinkOffArg, new CommandInfo(OnCommand)
-        {
-            HelpMessage = "Toggle off"
+            HelpMessage = "Add players to filtered list"
         });
 
         PluginInterface.UiBuilder.Draw += DrawUI;
@@ -90,7 +89,8 @@ public sealed class Plugin : IDalamudPlugin
             return;
 
         var players = Configuration.Players;
-        var showMessage = players.Keys.Count == 0 || players.Keys.Contains(sender.TextValue);
+        var showMessage = players.Keys.Count == 0 ||
+                          (players.ContainsKey(sender.TextValue) && players[sender.TextValue]);
         foreach (var payload in message.Payloads)
             if (showMessage && payload is MapLinkPayload mapLinkPayload)
                 PlaceMapMarker(mapLinkPayload.TerritoryType.RowId, mapLinkPayload.XCoord, mapLinkPayload.YCoord);
@@ -106,15 +106,16 @@ public sealed class Plugin : IDalamudPlugin
     {
         switch (args)
         {
-            case "":
+            case "menu":
                 ToggleMainUI();
                 break;
-            case MapLinkOnArg:
-                Configuration.IsPluginEnabled = true;
+            case "":
+                Configuration.IsPluginEnabled = !Configuration.IsPluginEnabled;
+                ChatGui.Print(Configuration.IsPluginEnabled ? "MapLink ON" : "MapLink OFF");
                 Configuration.Save();
                 break;
-            case MapLinkOffArg:
-                Configuration.IsPluginEnabled = false;
+            default:
+                Configuration.Players[args] = true;
                 Configuration.Save();
                 break;
         }
