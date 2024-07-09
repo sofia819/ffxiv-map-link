@@ -1,11 +1,12 @@
 {
-  "Author": "sofia819",
-  "Name": "MapLink",
-  "Punchline": "Automatically links map coordinates from chat",
-  "Description": "Automatically links map coordinates from chat",
-  "ApplicableVersion": "any",
-  "Tags": [
-    "map",
-    "link"
-  ]
+    "Author": "sofia819",
+    "Name": "MapLink",
+    "Punchline": "Automatically links map coordinates from chat",
+    "Description": "Automatically links map coordinates from chat",
+    "RepoUrl": "https://github.com/sofia819/ffxiv-map-link",
+    "ApplicableVersion": "any",
+    "Tags": [
+        "map",
+        "link"
+    ]
 }
