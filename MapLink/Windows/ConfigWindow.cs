@@ -11,12 +11,9 @@ public class ConfigWindow : Window, IDisposable
 {
     private readonly Configuration Configuration;
 
-    // We give this window a constant ID using ###
-    // This allows for labels being dynamic, like "{FPS Counter}fps###XYZ counter window",
-    // and the window ID will always be "###XYZ counter window" for ImGui
     public ConfigWindow(Plugin plugin) : base("Map Link Config###With a constant ID")
     {
-        Flags = ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoScrollbar;
+        Flags = ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse;
 
         Size = new Vector2(200, 200);
         SizeCondition = ImGuiCond.Always;
@@ -46,15 +43,34 @@ public class ConfigWindow : Window, IDisposable
             Array.Clear(buffer, 0, buffer.Length);
         }
 
+        ImGui.Spacing();
+
         foreach (var player in Configuration.Players)
         {
-            ImGui.Text(player.Key);
+            var isPlayerEnabled = player.Value;
+
+            ImGui.PushStyleColor(ImGuiCol.CheckMark, new Vector4(0, 128, 0, 255));
+            if (ImGui.Checkbox(player.Key, ref isPlayerEnabled))
+            {
+                Configuration.Players[player.Key] = isPlayerEnabled;
+                Configuration.Save();
+            }
+
+            ImGui.PopStyleColor();
+
             ImGui.SameLine();
-            if (ImGui.Button("-"))
+            ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(255, 0, 0, 255));
+            ImGui.PushID(player.Key);
+            if (ImGui.SmallButton("X"))
             {
                 Configuration.Players.Remove(player.Key);
                 Configuration.Save();
+                ImGui.PopID();
             }
+
+            ImGui.PopStyleColor();
+
+            ImGui.Spacing();
         }
     }
 }
