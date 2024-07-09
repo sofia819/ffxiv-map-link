@@ -42,6 +42,7 @@ public class ConfigWindow : Window, IDisposable
         {
             var playerName = Encoding.ASCII.GetString(buffer).TrimEnd((Char)0);
             Configuration.Players[playerName] = true;
+            Configuration.Save();
             Array.Clear(buffer, 0, buffer.Length);
         }
 
@@ -49,7 +50,11 @@ public class ConfigWindow : Window, IDisposable
         {
             ImGui.Text(player.Key);
             ImGui.SameLine();
-            if (ImGui.Button("-")) Configuration.Players.Remove(player.Key);
+            if (ImGui.Button("-"))
+            {
+                Configuration.Players.Remove(player.Key);
+                Configuration.Save();
+            }
         }
     }
 }

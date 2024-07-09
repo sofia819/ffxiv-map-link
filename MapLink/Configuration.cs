@@ -9,9 +9,11 @@ public class Configuration : IPluginConfiguration
 {
     public bool IsConfigWindowMovable { get; set; } = true;
 
+    public bool IsPluginEnabled { get; set; } = true;
+
     public Dictionary<string, bool> Players { get; set; } = new();
 
-    public int Version { get; set; } = 0;
+    public int Version { get; set; } = 1;
 
     // the below exist just to make saving less cumbersome
     public void Save()

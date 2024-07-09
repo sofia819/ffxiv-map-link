@@ -13,7 +13,9 @@ namespace MapLink;
 
 public sealed class Plugin : IDalamudPlugin
 {
-    private const string CommandName = "/maplink";
+    private const string MapLinkMainCommand = "/maplink";
+    private const string MapLinkOnArg = "on";
+    private const string MapLinkOffArg = "off";
 
     public readonly WindowSystem WindowSystem = new("MapLink");
 
@@ -27,9 +29,17 @@ public sealed class Plugin : IDalamudPlugin
         WindowSystem.AddWindow(ConfigWindow);
         WindowSystem.AddWindow(MainWindow);
 
-        CommandManager.AddHandler(CommandName, new CommandInfo(OnCommand)
+        CommandManager.AddHandler(MapLinkMainCommand, new CommandInfo(OnCommand)
         {
-            HelpMessage = "A useful message to display in /xlhelp"
+            HelpMessage = "Display main menu"
+        });
+        CommandManager.DispatchCommand(MapLinkMainCommand, MapLinkOnArg, new CommandInfo(OnCommand)
+        {
+            HelpMessage = "Toggle on"
+        });
+        CommandManager.DispatchCommand(MapLinkMainCommand, MapLinkOffArg, new CommandInfo(OnCommand)
+        {
+            HelpMessage = "Toggle off"
         });
 
         PluginInterface.UiBuilder.Draw += DrawUI;
@@ -44,6 +54,7 @@ public sealed class Plugin : IDalamudPlugin
         ChatGui = chatGui;
         GameGui = gameGui;
         DataManager = dataManager;
+
 
         ChatGui.ChatMessage += Chat_OnChatMessage;
     }
@@ -69,12 +80,15 @@ public sealed class Plugin : IDalamudPlugin
         ConfigWindow.Dispose();
         MainWindow.Dispose();
 
-        CommandManager.RemoveHandler(CommandName);
+        CommandManager.RemoveHandler(MapLinkMainCommand);
     }
 
     private void Chat_OnChatMessage(
         XivChatType type, int timestamp, ref SeString sender, ref SeString message, ref bool isHandled)
     {
+        if (!Configuration.IsPluginEnabled)
+            return;
+
         var players = Configuration.Players;
         var showMessage = players.Keys.Count == 0 || players.Keys.Contains(sender.TextValue);
         foreach (var payload in message.Payloads)
@@ -90,8 +104,20 @@ public sealed class Plugin : IDalamudPlugin
 
     private void OnCommand(string command, string args)
     {
-        // in response to the slash command, just toggle the display status of our main ui
-        ToggleMainUI();
+        switch (args)
+        {
+            case "":
+                ToggleMainUI();
+                break;
+            case MapLinkOnArg:
+                Configuration.IsPluginEnabled = true;
+                Configuration.Save();
+                break;
+            case MapLinkOffArg:
+                Configuration.IsPluginEnabled = false;
+                Configuration.Save();
+                break;
+        }
     }
 
     private void DrawUI()
