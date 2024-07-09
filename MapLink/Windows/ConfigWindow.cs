@@ -13,9 +13,14 @@ public class ConfigWindow : Window, IDisposable
 
     public ConfigWindow(Plugin plugin) : base("Map Link Config###With a constant ID")
     {
-        Flags = ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse;
+        Flags = ImGuiWindowFlags.None;
 
-        Size = new Vector2(200, 200);
+        SizeConstraints = new WindowSizeConstraints
+        {
+            MinimumSize = new Vector2(150, 150),
+            MaximumSize = new Vector2(300, float.MaxValue)
+        };
+
         SizeCondition = ImGuiCond.Always;
 
         Configuration = plugin.Configuration;
@@ -34,17 +39,34 @@ public class ConfigWindow : Window, IDisposable
 
     public override void Draw()
     {
-        var buffer = new byte[1000];
-        if (ImGui.InputText("", buffer, 1000, ImGuiInputTextFlags.EnterReturnsTrue))
+        // Enable plugin checkbox
+        var isPluginEnabled = Configuration.IsPluginEnabled;
+
+        ImGui.PushStyleColor(ImGuiCol.CheckMark, new Vector4(0, 128, 0, 255));
+        if (ImGui.Checkbox("Enabled", ref isPluginEnabled))
         {
-            var playerName = Encoding.ASCII.GetString(buffer).TrimEnd((Char)0);
+            Configuration.IsPluginEnabled = isPluginEnabled;
+            Configuration.Save();
+        }
+
+        ImGui.PopStyleColor();
+        ImGui.Spacing();
+
+        ImGui.Text("Players");
+        ImGui.Spacing();
+
+        // Player input box
+        string buffer = "";
+        if (ImGui.InputTextWithHint("", "Player Name", ref buffer, 1000, ImGuiInputTextFlags.EnterReturnsTrue))
+        {
+            var playerName = buffer;
             Configuration.Players[playerName] = true;
             Configuration.Save();
-            Array.Clear(buffer, 0, buffer.Length);
         }
 
         ImGui.Spacing();
 
+        // Player list
         foreach (var player in Configuration.Players)
         {
             var isPlayerEnabled = player.Value;
