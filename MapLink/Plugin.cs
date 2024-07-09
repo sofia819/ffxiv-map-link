@@ -13,8 +13,8 @@ namespace MapLink;
 
 public sealed class Plugin : IDalamudPlugin
 {
-    private const string MapLinkMainCommand = "/maplink menu";
-    private const string MapLinkToggleCommand = "/maplink";
+    private const string MapLinkCommand = "/mpl";
+    private const string MapLinkConfigCommand = "/mpl cfg";
 
     public readonly WindowSystem WindowSystem = new("MapLink");
 
@@ -23,22 +23,20 @@ public sealed class Plugin : IDalamudPlugin
         Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
 
         ConfigWindow = new ConfigWindow(this);
-        MainWindow = new MainWindow(this);
 
         WindowSystem.AddWindow(ConfigWindow);
-        WindowSystem.AddWindow(MainWindow);
 
-        CommandManager.AddHandler(MapLinkMainCommand, new CommandInfo(OnCommand)
+        CommandManager.AddHandler(MapLinkCommand, new CommandInfo(OnCommand)
         {
             HelpMessage = "Toggle on/off"
         });
-        CommandManager.AddHandler(MapLinkToggleCommand, new CommandInfo(OnCommand)
+        CommandManager.AddHandler(MapLinkConfigCommand, new CommandInfo(OnCommand)
         {
-            HelpMessage = "Display main menu"
+            HelpMessage = "Opens settings"
         });
-        CommandManager.AddHandler($"{MapLinkToggleCommand} Player Mame", new CommandInfo(OnCommand)
+        CommandManager.AddHandler($"{MapLinkCommand} Player Name", new CommandInfo(OnCommand)
         {
-            HelpMessage = "Add players to filtered list"
+            HelpMessage = "Add player to filtered list"
         });
 
         PluginInterface.UiBuilder.Draw += DrawUI;
@@ -46,9 +44,6 @@ public sealed class Plugin : IDalamudPlugin
         // This adds a button to the plugin installer entry of this plugin which allows
         // to toggle the display status of the configuration ui
         PluginInterface.UiBuilder.OpenConfigUi += ToggleConfigUI;
-
-        // Adds another button that is doing the same but for the main ui of the plugin
-        PluginInterface.UiBuilder.OpenMainUi += ToggleMainUI;
 
         ChatGui = chatGui;
         GameGui = gameGui;
@@ -70,16 +65,14 @@ public sealed class Plugin : IDalamudPlugin
 
     public Configuration Configuration { get; init; }
     private ConfigWindow ConfigWindow { get; init; }
-    private MainWindow MainWindow { get; init; }
 
     public void Dispose()
     {
         WindowSystem.RemoveAllWindows();
 
         ConfigWindow.Dispose();
-        MainWindow.Dispose();
 
-        CommandManager.RemoveHandler(MapLinkMainCommand);
+        CommandManager.RemoveHandler(MapLinkCommand);
     }
 
     private void Chat_OnChatMessage(
@@ -106,17 +99,22 @@ public sealed class Plugin : IDalamudPlugin
     {
         switch (args)
         {
-            case "menu":
-                ToggleMainUI();
-                break;
             case "":
                 Configuration.IsPluginEnabled = !Configuration.IsPluginEnabled;
                 ChatGui.Print(Configuration.IsPluginEnabled ? "MapLink ON" : "MapLink OFF");
                 Configuration.Save();
                 break;
+            case "cfg":
+                ToggleConfigUI();
+                break;
             default:
-                Configuration.Players[args] = true;
-                Configuration.Save();
+                // handle player name
+                if (args.Split(" ").Length == 2)
+                {
+                    Configuration.Players[args] = true;
+                    Configuration.Save();
+                }
+
                 break;
         }
     }
@@ -129,10 +127,5 @@ public sealed class Plugin : IDalamudPlugin
     public void ToggleConfigUI()
     {
         ConfigWindow.Toggle();
-    }
-
-    public void ToggleMainUI()
-    {
-        MainWindow.Toggle();
     }
 }
