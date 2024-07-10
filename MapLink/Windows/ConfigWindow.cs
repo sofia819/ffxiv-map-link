@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Numerics;
-using System.Text;
 using Dalamud.Interface.Windowing;
 using ImGuiNET;
 using ImGui = ImGuiNET.ImGui;
@@ -9,7 +8,7 @@ namespace MapLink.Windows;
 
 public class ConfigWindow : Window, IDisposable
 {
-    private readonly Configuration Configuration;
+    private readonly Configuration configuration;
 
     public ConfigWindow(Plugin plugin) : base("Map Link Config###With a constant ID")
     {
@@ -17,13 +16,13 @@ public class ConfigWindow : Window, IDisposable
 
         SizeConstraints = new WindowSizeConstraints
         {
-            MinimumSize = new Vector2(150, 150),
+            MinimumSize = new Vector2(150, 200),
             MaximumSize = new Vector2(300, float.MaxValue)
         };
 
         SizeCondition = ImGuiCond.Always;
 
-        Configuration = plugin.Configuration;
+        configuration = plugin.Configuration;
     }
 
     public void Dispose() { }
@@ -31,7 +30,7 @@ public class ConfigWindow : Window, IDisposable
     public override void PreDraw()
     {
         // Flags must be added or removed before Draw() is being called, or they won't apply
-        if (Configuration.IsConfigWindowMovable)
+        if (configuration.IsConfigWindowMovable)
             Flags &= ~ImGuiWindowFlags.NoMove;
         else
             Flags |= ImGuiWindowFlags.NoMove;
@@ -40,53 +39,57 @@ public class ConfigWindow : Window, IDisposable
     public override void Draw()
     {
         // Enable plugin checkbox
-        var isPluginEnabled = Configuration.IsPluginEnabled;
+        var isPluginEnabled = configuration.IsPluginEnabled;
 
-        ImGui.PushStyleColor(ImGuiCol.CheckMark, new Vector4(0, 128, 0, 255));
         if (ImGui.Checkbox("Enabled", ref isPluginEnabled))
         {
-            Configuration.IsPluginEnabled = isPluginEnabled;
-            Configuration.Save();
+            configuration.IsPluginEnabled = isPluginEnabled;
+            configuration.Save();
         }
 
-        ImGui.PopStyleColor();
+        // Enable logging checkbox
+        var isLoggingEnabled = configuration.IsLoggingEnabled;
+
+        if (ImGui.Checkbox("Log", ref isLoggingEnabled))
+        {
+            configuration.IsLoggingEnabled = isLoggingEnabled;
+            configuration.Save();
+        }
+
         ImGui.Spacing();
 
         ImGui.Text("Players");
         ImGui.Spacing();
 
         // Player input box
-        string buffer = "";
+        var buffer = "";
         if (ImGui.InputTextWithHint("", "Player Name", ref buffer, 1000, ImGuiInputTextFlags.EnterReturnsTrue))
         {
             var playerName = buffer;
-            Configuration.Players[playerName] = true;
-            Configuration.Save();
+            configuration.Players[playerName] = true;
+            configuration.Save();
         }
 
         ImGui.Spacing();
 
         // Player list
-        foreach (var player in Configuration.Players)
+        foreach (var player in configuration.Players)
         {
             var isPlayerEnabled = player.Value;
 
-            ImGui.PushStyleColor(ImGuiCol.CheckMark, new Vector4(0, 128, 0, 255));
             if (ImGui.Checkbox(player.Key, ref isPlayerEnabled))
             {
-                Configuration.Players[player.Key] = isPlayerEnabled;
-                Configuration.Save();
+                configuration.Players[player.Key] = isPlayerEnabled;
+                configuration.Save();
             }
-
-            ImGui.PopStyleColor();
 
             ImGui.SameLine();
             ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(255, 0, 0, 255));
             ImGui.PushID(player.Key);
             if (ImGui.SmallButton("X"))
             {
-                Configuration.Players.Remove(player.Key);
-                Configuration.Save();
+                configuration.Players.Remove(player.Key);
+                configuration.Save();
                 ImGui.PopID();
             }
 

@@ -1,4 +1,5 @@
-﻿using Dalamud.Game.Command;
+﻿using System.Linq;
+using Dalamud.Game.Command;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
@@ -13,10 +14,11 @@ namespace MapLink;
 
 public sealed class Plugin : IDalamudPlugin
 {
+    private const string PluginName = "MapLink";
     private const string MapLinkCommand = "/mpl";
     private const string MapLinkConfigCommand = "/mpl cfg";
 
-    public readonly WindowSystem WindowSystem = new("MapLink");
+    public readonly WindowSystem WindowSystem = new(PluginName);
 
     public Plugin(IChatGui chatGui, IGameGui gameGui, IDataManager dataManager)
     {
@@ -82,11 +84,25 @@ public sealed class Plugin : IDalamudPlugin
             return;
 
         var players = Configuration.Players;
-        var showMessage = players.Keys.Count == 0 ||
-                          (players.ContainsKey(sender.TextValue) && players[sender.TextValue]);
+        /*
+         * 1. Check if there are any filtered players
+         * 2. Check if all entires are disabled
+         * 3. Check filter
+         */
+        var showMessage = players.Keys.Count == 0 || players.Values.All(enabled => !enabled) ||
+                          (players.ContainsKey(sender.TextValue) &&
+                           players[sender.TextValue]);
         foreach (var payload in message.Payloads)
             if (showMessage && payload is MapLinkPayload mapLinkPayload)
+            {
                 PlaceMapMarker(mapLinkPayload.TerritoryType.RowId, mapLinkPayload.XCoord, mapLinkPayload.YCoord);
+                if (Configuration.IsLoggingEnabled)
+                {
+                    ChatGui.Print(
+                        $"{sender.TextValue} posts a map link",
+                        PluginName);
+                }
+            }
     }
 
     public void PlaceMapMarker(uint territoryTypeRowId, float coordX, float coordY)
@@ -101,7 +117,7 @@ public sealed class Plugin : IDalamudPlugin
         {
             case "":
                 Configuration.IsPluginEnabled = !Configuration.IsPluginEnabled;
-                ChatGui.Print(Configuration.IsPluginEnabled ? "MapLink ON" : "MapLink OFF");
+                ChatGui.Print(Configuration.IsPluginEnabled ? "ON" : "OFF", PluginName);
                 Configuration.Save();
                 break;
             case "cfg":

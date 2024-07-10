@@ -11,6 +11,8 @@ public class Configuration : IPluginConfiguration
 
     public bool IsPluginEnabled { get; set; } = true;
 
+    public bool IsLoggingEnabled { get; set; } = true;
+
     public Dictionary<string, bool> Players { get; set; } = new();
 
     public int Version { get; set; } = 1;
