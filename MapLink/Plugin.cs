@@ -83,8 +83,8 @@ public sealed class Plugin : IDalamudPlugin
         if (!Configuration.IsPluginEnabled)
             return;
 
-        // Don't want Sonar messages if true
-        if (Configuration.IgnoreSonar && sender.TextValue.ToLower().Equals("sonar"))
+        // Ignore Sonar
+        if (sender.TextValue.ToLower().Equals("sonar"))
         {
             return;
         }

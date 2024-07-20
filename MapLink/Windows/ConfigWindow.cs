@@ -16,7 +16,7 @@ public class ConfigWindow : Window, IDisposable
 
         SizeConstraints = new WindowSizeConstraints
         {
-            MinimumSize = new Vector2(150, 220),
+            MinimumSize = new Vector2(150, 200),
             MaximumSize = new Vector2(300, float.MaxValue)
         };
 
@@ -55,16 +55,7 @@ public class ConfigWindow : Window, IDisposable
             configuration.IsLoggingEnabled = isLoggingEnabled;
             configuration.Save();
         }
-        
-        // Ignore Sonar checkbox
-        var ignoreSonar = configuration.IgnoreSonar;
 
-        if (ImGui.Checkbox("Ignore Sonar", ref ignoreSonar))
-        {
-            configuration.IgnoreSonar = ignoreSonar;
-            configuration.Save();
-        }
-        
         ImGui.Spacing();
 
         ImGui.Text("Players");
