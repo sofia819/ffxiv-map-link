@@ -57,11 +57,11 @@ public class ConfigWindow : Window, IDisposable
         }
         
         // Ignore Sonar checkbox
-        var shouldIgnoreSonar = configuration.IgnoreSonar;
+        var ignoreSonar = configuration.IgnoreSonar;
 
-        if (ImGui.Checkbox("Ignore Sonar", ref shouldIgnoreSonar))
+        if (ImGui.Checkbox("Ignore Sonar", ref ignoreSonar))
         {
-            configuration.IgnoreSonar = shouldIgnoreSonar;
+            configuration.IgnoreSonar = ignoreSonar;
             configuration.Save();
         }
         
