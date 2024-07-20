@@ -83,10 +83,16 @@ public sealed class Plugin : IDalamudPlugin
         if (!Configuration.IsPluginEnabled)
             return;
 
+        // Ignore Sonar
+        if (sender.TextValue.ToLower().Equals("sonar"))
+        {
+            return;
+        }
+
         var players = Configuration.Players;
         /*
          * 1. Check if there are any filtered players
-         * 2. Check if all entires are disabled
+         * 2. Check if all entries are disabled
          * 3. Check filter
          */
         var showMessage = players.Keys.Count == 0 || players.Values.All(enabled => !enabled) ||
