@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Dalamud.Game.Command;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
@@ -17,8 +18,12 @@ public sealed class Plugin : IDalamudPlugin
     private const string PluginName = "MapLink";
     private const string MapLinkCommand = "/mpl";
     private const string MapLinkConfigCommand = "/mpl cfg";
+    private readonly TimeSpan timeBetweenMapLinks = TimeSpan.FromSeconds(20);
 
     public readonly WindowSystem WindowSystem = new(PluginName);
+    private MapLinkPayload? lastMapLink;
+
+    private DateTime lastUpdate = DateTime.MinValue;
 
     public Plugin(IChatGui chatGui, IGameGui gameGui, IDataManager dataManager)
     {
@@ -83,23 +88,12 @@ public sealed class Plugin : IDalamudPlugin
         if (!Configuration.IsPluginEnabled)
             return;
 
-        // Ignore Sonar
-        if (sender.TextValue.ToLower().Equals("sonar"))
-        {
-            return;
-        }
+        // Filter Sonar and players
+        if (!shouldFollowMessageFromSender(sender)) return;
 
-        var players = Configuration.Players;
-        /*
-         * 1. Check if there are any filtered players
-         * 2. Check if all entries are disabled
-         * 3. Check filter
-         */
-        var showMessage = players.Keys.Count == 0 || players.Values.All(enabled => !enabled) ||
-                          (players.ContainsKey(sender.TextValue) &&
-                           players[sender.TextValue]);
         foreach (var payload in message.Payloads)
-            if (showMessage && payload is MapLinkPayload mapLinkPayload)
+            if (payload is MapLinkPayload mapLinkPayload &&
+                shouldFollowMapLink(mapLinkPayload))
             {
                 PlaceMapMarker(mapLinkPayload.TerritoryType.RowId, mapLinkPayload.XCoord, mapLinkPayload.YCoord);
                 if (Configuration.IsLoggingEnabled)
@@ -139,6 +133,42 @@ public sealed class Plugin : IDalamudPlugin
 
                 break;
         }
+    }
+
+    private bool shouldFollowMessageFromSender(SeString sender)
+    {
+        if (sender.TextValue.ToLower().Equals("sonar"))
+        {
+            return false;
+        }
+        
+        var players = Configuration.Players;
+        /*
+         * 1. Check if there are any filtered players
+         * 2. Check if all entries are disabled
+         * 3. Check filter
+         */
+        return players.Keys.Count == 0 || players.Values.All(enabled => !enabled) ||
+               (players.ContainsKey(sender.TextValue) &&
+                players[sender.TextValue]);
+    }
+
+    private bool shouldFollowMapLink(MapLinkPayload payload)
+    {
+        /*
+         * 1. If map coordinates are different or
+         * 2. Certain amount of time has elapsed since last identical map link
+         */
+        var currentTime = DateTime.Now;
+        if (payload.RawX != lastMapLink?.RawX || payload.RawY != lastMapLink?.RawY ||
+            (lastUpdate - currentTime).Duration().Seconds > timeBetweenMapLinks.Seconds)
+        {
+            lastUpdate = currentTime;
+            lastMapLink = payload;
+            return true;
+        }
+
+        return false;
     }
 
     private void DrawUI()
