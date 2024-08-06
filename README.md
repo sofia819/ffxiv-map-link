@@ -8,7 +8,7 @@ Automatically opens the last linked flag coordinates from chat.
 
 Note: this is my first attempt at C# and Dalamud plugins, so this is filled with bad coding practices and bugs.
 
-[Custom Plugin Repository](https://gist.githubusercontent.com/sofia819/fb17fff59d39923fde123538dbf8b92b/raw/map-link.json)
+[Custom Plugin Repository](https://gist.githubusercontent.com/sofia819/fb17fff59d39923fde123538dbf8b92b/raw/sofia-plugins.json)
 
 ## Settings
 
