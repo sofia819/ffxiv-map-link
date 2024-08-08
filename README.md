@@ -1,6 +1,6 @@
 # Map Link
 
-[Video Demo](https://github.com/sofia819/ffxiv-map-link/assets/17885737/e92997c8-c5c0-432f-a9a0-6b653f2332ad)
+[Video Demo](https://github.com/user-attachments/assets/1f7bfdab-98aa-4c1d-8b1e-e8294bd4b2f2)
 
 Automatically opens the last linked flag coordinates from chat.
 
