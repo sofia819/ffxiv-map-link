@@ -10,7 +10,8 @@ public class ConfigWindow : Window, IDisposable
 {
     private readonly Configuration configuration;
 
-    public ConfigWindow(Plugin plugin) : base("Map Link Config###With a constant ID")
+    public ConfigWindow(Plugin plugin)
+        : base("Map Link Config###MapLinkConfigWindow")
     {
         Flags = ImGuiWindowFlags.None;
 
@@ -27,14 +28,7 @@ public class ConfigWindow : Window, IDisposable
 
     public void Dispose() { }
 
-    public override void PreDraw()
-    {
-        // Flags must be added or removed before Draw() is being called, or they won't apply
-        if (configuration.IsConfigWindowMovable)
-            Flags &= ~ImGuiWindowFlags.NoMove;
-        else
-            Flags |= ImGuiWindowFlags.NoMove;
-    }
+    public override void PreDraw() { }
 
     public override void Draw()
     {
@@ -63,7 +57,15 @@ public class ConfigWindow : Window, IDisposable
 
         // Player input box
         var buffer = "";
-        if (ImGui.InputTextWithHint("", "Player Name", ref buffer, 1000, ImGuiInputTextFlags.EnterReturnsTrue))
+        if (
+            ImGui.InputTextWithHint(
+                "",
+                "Player Name",
+                ref buffer,
+                30,
+                ImGuiInputTextFlags.EnterReturnsTrue
+            )
+        )
         {
             var playerName = buffer;
             configuration.Players[playerName] = true;
