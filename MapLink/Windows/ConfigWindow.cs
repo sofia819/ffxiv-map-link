@@ -62,9 +62,9 @@ public class ConfigWindow : Window, IDisposable
                 "",
                 "Player Name",
                 ref buffer,
-                1000,
+                30,
                 ImGuiInputTextFlags.EnterReturnsTrue
-            ) && buffer.Split(" ").Length is 1 or 2
+            )
         )
         {
             var playerName = buffer;
