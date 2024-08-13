@@ -92,12 +92,7 @@ public sealed class Plugin : IDalamudPlugin
                 break;
             default:
                 // handle player name
-                ChatGui.Print(
-                    Configuration.SavePlayerName(args)
-                        ? $"{args} added successfully"
-                        : $"Failed to add {args}",
-                    PluginName
-                );
+                Configuration.SavePlayerName(args);
 
                 break;
         }
