@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Numerics;
+using Dalamud.Interface;
+using Dalamud.Interface.Components;
 using Dalamud.Interface.Windowing;
 using ImGuiNET;
 using ImGui = ImGuiNET.ImGui;
@@ -13,12 +15,12 @@ public class ConfigWindow : Window, IDisposable
     public ConfigWindow(Plugin plugin)
         : base("Map Link Config###MapLinkConfigWindow")
     {
-        Flags = ImGuiWindowFlags.None;
+        Flags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse;
 
         SizeConstraints = new WindowSizeConstraints
         {
-            MinimumSize = new Vector2(150, 200),
-            MaximumSize = new Vector2(300, float.MaxValue)
+            MinimumSize = new Vector2(220, 150),
+            MaximumSize = new Vector2(220, 350)
         };
 
         SizeCondition = ImGuiCond.Always;
@@ -32,72 +34,113 @@ public class ConfigWindow : Window, IDisposable
 
     public override void Draw()
     {
-        // Enable plugin checkbox
-        var isPluginEnabled = configuration.IsPluginEnabled;
+        ImGui.BeginTabBar("Settings");
 
-        if (ImGui.Checkbox("Enabled", ref isPluginEnabled))
+        Settings();
+        Players();
+
+        ImGui.EndTabBar();
+    }
+
+    private void Settings()
+    {
+        if (ImGui.BeginTabItem("Settings"))
         {
-            configuration.IsPluginEnabled = isPluginEnabled;
-            configuration.Save();
+            // Enable plugin checkbox
+            var isPluginEnabled = configuration.IsPluginEnabled;
+
+            if (ImGui.Checkbox("Enabled", ref isPluginEnabled))
+            {
+                configuration.IsPluginEnabled = isPluginEnabled;
+                configuration.Save();
+            }
+
+            // Enable logging checkbox
+            var isLoggingEnabled = configuration.IsLoggingEnabled;
+
+            if (ImGui.Checkbox("Log", ref isLoggingEnabled))
+            {
+                configuration.IsLoggingEnabled = isLoggingEnabled;
+                configuration.Save();
+            }
+
+            ImGui.EndTabItem();
         }
+    }
 
-        // Enable logging checkbox
-        var isLoggingEnabled = configuration.IsLoggingEnabled;
-
-        if (ImGui.Checkbox("Log", ref isLoggingEnabled))
+    private void Players()
+    {
+        if (ImGui.BeginTabItem("Players"))
         {
-            configuration.IsLoggingEnabled = isLoggingEnabled;
-            configuration.Save();
-        }
-
-        ImGui.Spacing();
-
-        ImGui.Text("Players");
-        ImGui.Spacing();
-
-        // Player input box
-        var buffer = "";
-        if (
-            ImGui.InputTextWithHint(
-                "",
-                "Player Name",
-                ref buffer,
-                30,
-                ImGuiInputTextFlags.EnterReturnsTrue
+            // Player input box
+            var buffer = "";
+            ImGui.PushItemWidth(200);
+            if (
+                ImGui.InputTextWithHint(
+                    "",
+                    "Player Name",
+                    ref buffer,
+                    30,
+                    ImGuiInputTextFlags.EnterReturnsTrue
+                )
             )
-        )
-        {
-            var playerName = buffer;
-            configuration.Players[playerName] = true;
-            configuration.Save();
-        }
-
-        ImGui.Spacing();
-
-        // Player list
-        foreach (var player in configuration.Players)
-        {
-            var isPlayerEnabled = player.Value;
-
-            if (ImGui.Checkbox(player.Key, ref isPlayerEnabled))
             {
-                configuration.Players[player.Key] = isPlayerEnabled;
-                configuration.Save();
+                var playerName = buffer;
+                Plugin.ChatGui.Print(
+                    configuration.SavePlayerName(playerName)
+                        ? $"{playerName} added successfully"
+                        : $"Failed to add {playerName}",
+                    Plugin.PluginName
+                );
             }
 
-            ImGui.SameLine();
-            ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(255, 0, 0, 255));
-            ImGui.PushID(player.Key);
-            if (ImGui.SmallButton("X"))
-            {
-                configuration.Players.Remove(player.Key);
-                configuration.Save();
-                ImGui.PopID();
-            }
-
-            ImGui.PopStyleColor();
+            ImGui.PopItemWidth();
 
             ImGui.Spacing();
+
+            if (configuration.Players.Count == 0)
+                return;
+
+            // Player list
+            if (ImGui.BeginTable("Players", 3, ImGuiTableFlags.Borders | ImGuiTableFlags.ScrollY))
+            {
+                ImGui.TableSetupColumn("X", ImGuiTableColumnFlags.WidthFixed);
+                ImGui.TableSetupColumn("O", ImGuiTableColumnFlags.WidthFixed);
+                ImGui.TableSetupColumn("Player");
+
+                foreach (var player in configuration.Players)
+                {
+                    ImGui.PushID(player.Key);
+
+                    // Remove player
+                    ImGui.TableNextColumn();
+                    if (ImGuiComponents.IconButton(FontAwesomeIcon.Trash))
+                    {
+                        configuration.Players.Remove(player.Key);
+                        configuration.Save();
+                        ImGui.PopID();
+                    }
+
+                    // Enable player
+                    ImGui.TableNextColumn();
+                    var isPlayerEnabled = player.Value;
+                    if (ImGui.Checkbox("", ref isPlayerEnabled))
+                    {
+                        configuration.Players[player.Key] = isPlayerEnabled;
+                        configuration.Save();
+                    }
+
+                    // Player name
+                    ImGui.TableNextColumn();
+                    ImGui.Text(player.Key);
+
+                    ImGui.PopID();
+                }
+            }
+
+            ImGui.EndTable();
+
+            ImGui.EndTabItem();
         }
     }
 }

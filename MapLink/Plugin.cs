@@ -17,8 +17,8 @@ public sealed class Plugin : IDalamudPlugin
 {
     public readonly WindowSystem WindowSystem = new(PluginName);
     public Configuration Configuration { get; init; }
+    public const string PluginName = "MapLink";
 
-    private const string PluginName = "MapLink";
     private const string MapLinkCommand = "/mpl";
     private const string MapLinkConfigCommand = "/mpl cfg";
     private readonly TimeSpan timeBetweenMapLinks = TimeSpan.FromSeconds(20);
@@ -92,11 +92,12 @@ public sealed class Plugin : IDalamudPlugin
                 break;
             default:
                 // handle player name
-                if (args.Split(" ").Length is 1 or 2)
-                {
-                    Configuration.Players[args] = true;
-                    Configuration.Save();
-                }
+                ChatGui.Print(
+                    Configuration.SavePlayerName(args)
+                        ? $"{args} added successfully"
+                        : $"Failed to add {args}",
+                    PluginName
+                );
 
                 break;
         }
