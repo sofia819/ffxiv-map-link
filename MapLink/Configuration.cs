@@ -22,7 +22,7 @@ public class Configuration : IPluginConfiguration
 
     public void SavePlayerName(String playerName)
     {
-        if (namePattern.IsMatch(playerName) && playerName.Length <= 21)
+        if (Validate(playerName))
         {
             Players[playerName] = true;
             Save();
