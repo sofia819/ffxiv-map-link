@@ -15,11 +15,11 @@ public class ConfigWindow : Window, IDisposable
     public ConfigWindow(Plugin plugin)
         : base("Map Link Config###MapLinkConfigWindow")
     {
-        Flags = ImGuiWindowFlags.None;
+        Flags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse;
 
         SizeConstraints = new WindowSizeConstraints
         {
-            MinimumSize = new Vector2(220, 200),
+            MinimumSize = new Vector2(220, 150),
             MaximumSize = new Vector2(220, 350)
         };
 
@@ -34,95 +34,113 @@ public class ConfigWindow : Window, IDisposable
 
     public override void Draw()
     {
-        // Enable plugin checkbox
-        var isPluginEnabled = configuration.IsPluginEnabled;
+        ImGui.BeginTabBar("Settings");
 
-        if (ImGui.Checkbox("Enabled", ref isPluginEnabled))
+        Settings();
+        Players();
+
+        ImGui.EndTabBar();
+    }
+
+    private void Settings()
+    {
+        if (ImGui.BeginTabItem("Settings"))
         {
-            configuration.IsPluginEnabled = isPluginEnabled;
-            configuration.Save();
-        }
+            // Enable plugin checkbox
+            var isPluginEnabled = configuration.IsPluginEnabled;
 
-        // Enable logging checkbox
-        var isLoggingEnabled = configuration.IsLoggingEnabled;
-
-        if (ImGui.Checkbox("Log", ref isLoggingEnabled))
-        {
-            configuration.IsLoggingEnabled = isLoggingEnabled;
-            configuration.Save();
-        }
-
-        ImGui.Spacing();
-
-        ImGui.Text("Players");
-        ImGui.Spacing();
-
-        // Player input box
-
-
-        var buffer = "";
-        ImGui.PushItemWidth(200);
-        if (
-            ImGui.InputTextWithHint(
-                "",
-                "Player Name",
-                ref buffer,
-                30,
-                ImGuiInputTextFlags.EnterReturnsTrue
-            )
-        )
-        {
-            var playerName = buffer;
-            Plugin.ChatGui.Print(
-                configuration.SavePlayerName(playerName)
-                    ? $"{playerName} added successfully"
-                    : $"Failed to add {playerName}",
-                Plugin.PluginName
-            );
-        }
-        ImGui.PopItemWidth();
-
-        ImGui.Spacing();
-
-        if (configuration.Players.Count == 0)
-            return;
-
-        // Player list
-        if (ImGui.BeginTable("Players", 3, ImGuiTableFlags.Borders))
-        {
-            ImGui.TableSetupColumn("X", ImGuiTableColumnFlags.WidthFixed);
-            ImGui.TableSetupColumn("O", ImGuiTableColumnFlags.WidthFixed);
-            ImGui.TableSetupColumn("Player");
-
-            foreach (var player in configuration.Players)
+            if (ImGui.Checkbox("Enabled", ref isPluginEnabled))
             {
-                ImGui.PushID(player.Key);
+                configuration.IsPluginEnabled = isPluginEnabled;
+                configuration.Save();
+            }
 
-                // Remove player
-                ImGui.TableNextColumn();
-                if (ImGuiComponents.IconButton(FontAwesomeIcon.Trash))
+            // Enable logging checkbox
+            var isLoggingEnabled = configuration.IsLoggingEnabled;
+
+            if (ImGui.Checkbox("Log", ref isLoggingEnabled))
+            {
+                configuration.IsLoggingEnabled = isLoggingEnabled;
+                configuration.Save();
+            }
+
+            ImGui.EndTabItem();
+        }
+    }
+
+    private void Players()
+    {
+        if (ImGui.BeginTabItem("Players"))
+        {
+            // Player input box
+            var buffer = "";
+            ImGui.PushItemWidth(200);
+            if (
+                ImGui.InputTextWithHint(
+                    "",
+                    "Player Name",
+                    ref buffer,
+                    30,
+                    ImGuiInputTextFlags.EnterReturnsTrue
+                )
+            )
+            {
+                var playerName = buffer;
+                Plugin.ChatGui.Print(
+                    configuration.SavePlayerName(playerName)
+                        ? $"{playerName} added successfully"
+                        : $"Failed to add {playerName}",
+                    Plugin.PluginName
+                );
+            }
+
+            ImGui.PopItemWidth();
+
+            ImGui.Spacing();
+
+            if (configuration.Players.Count == 0)
+                return;
+
+            // Player list
+            if (ImGui.BeginTable("Players", 3, ImGuiTableFlags.Borders | ImGuiTableFlags.ScrollY))
+            {
+                ImGui.TableSetupColumn("X", ImGuiTableColumnFlags.WidthFixed);
+                ImGui.TableSetupColumn("O", ImGuiTableColumnFlags.WidthFixed);
+                ImGui.TableSetupColumn("Player");
+
+                foreach (var player in configuration.Players)
                 {
-                    configuration.Players.Remove(player.Key);
-                    configuration.Save();
+                    ImGui.PushID(player.Key);
+
+                    // Remove player
+                    ImGui.TableNextColumn();
+                    if (ImGuiComponents.IconButton(FontAwesomeIcon.Trash))
+                    {
+                        configuration.Players.Remove(player.Key);
+                        configuration.Save();
+                        ImGui.PopID();
+                    }
+
+                    // Enable player
+                    ImGui.TableNextColumn();
+                    var isPlayerEnabled = player.Value;
+                    if (ImGui.Checkbox("", ref isPlayerEnabled))
+                    {
+                        configuration.Players[player.Key] = isPlayerEnabled;
+                        configuration.Save();
+                    }
+
+                    // Player name
+                    ImGui.TableNextColumn();
+                    ImGui.Text(player.Key);
+
                     ImGui.PopID();
                 }
-
-                // Enable player
-                ImGui.TableNextColumn();
-                var isPlayerEnabled = player.Value;
-                if (ImGui.Checkbox("", ref isPlayerEnabled))
-                {
-                    configuration.Players[player.Key] = isPlayerEnabled;
-                    configuration.Save();
-                }
-
-                // Player name
-                ImGui.TableNextColumn();
-                ImGui.Text(player.Key);
-
-                ImGui.PopID();
             }
+
+            ImGui.EndTable();
+
+            ImGui.EndTabItem();
         }
-        ImGui.EndTable();
     }
 }
