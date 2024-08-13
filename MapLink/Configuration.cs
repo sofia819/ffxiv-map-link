@@ -18,6 +18,8 @@ public class Configuration : IPluginConfiguration
 
     private readonly Regex namePattern = new("^[A-Z][a-z-']{1,14}\\s[A-Z][a-z-']{1,14}$");
 
+    private readonly Regex invalidPattern = new("(--)|(-')|('-)");
+
     public void SavePlayerName(String playerName)
     {
         if (namePattern.IsMatch(playerName) && playerName.Length <= 21)
@@ -31,6 +33,18 @@ public class Configuration : IPluginConfiguration
         }
 
         Plugin.ChatGui.Print($"Error adding {playerName}: Invalid format");
+    }
+
+    private bool Validate(String playerName)
+    {
+        /*
+         * 1. Combined length is less than 20
+         * 2. Matches format
+         * 3. Does not include weird hyphens
+         */
+        return playerName.Length <= 21
+            && namePattern.IsMatch(playerName)
+            && !invalidPattern.IsMatch(playerName);
     }
 
     // the below exist just to make saving less cumbersome
