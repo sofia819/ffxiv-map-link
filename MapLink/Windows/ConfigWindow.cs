@@ -19,8 +19,8 @@ public class ConfigWindow : Window, IDisposable
 
         SizeConstraints = new WindowSizeConstraints
         {
-            MinimumSize = new Vector2(220, 150),
-            MaximumSize = new Vector2(220, 350)
+            MinimumSize = new Vector2(180, 150),
+            MaximumSize = new Vector2(220, 300)
         };
 
         SizeCondition = ImGuiCond.Always;
@@ -86,12 +86,7 @@ public class ConfigWindow : Window, IDisposable
             )
             {
                 var playerName = buffer;
-                Plugin.ChatGui.Print(
-                    configuration.SavePlayerName(playerName)
-                        ? $"{playerName} added successfully"
-                        : $"Failed to add {playerName}",
-                    Plugin.PluginName
-                );
+                configuration.SavePlayerName(playerName);
             }
 
             ImGui.PopItemWidth();

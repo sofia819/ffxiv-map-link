@@ -16,39 +16,26 @@ public class Configuration : IPluginConfiguration
 
     public Dictionary<string, bool> Players { get; set; } = new();
 
-    private readonly Regex sanitizePattern = new("['-]");
+    private readonly Regex namePattern = new("^[A-Z][a-z-']{1,14}\\s[A-Z][a-z-']{1,14}$");
+
+    public void SavePlayerName(String playerName)
+    {
+        if (namePattern.IsMatch(playerName) && playerName.Length <= 21)
+        {
+            Players[playerName] = true;
+            Save();
+
+            Plugin.ChatGui.Print($"{playerName} added successfully");
+
+            return;
+        }
+
+        Plugin.ChatGui.Print($"Error adding {playerName}: Invalid format");
+    }
 
     // the below exist just to make saving less cumbersome
     public void Save()
     {
         Plugin.PluginInterface.SavePluginConfig(this);
-    }
-
-    public bool SavePlayerName(String playerName)
-    {
-        if (Validate(playerName))
-        {
-            Players[playerName] = true;
-            Save();
-            return true;
-        }
-
-        return false;
-    }
-
-    private bool Validate(String playerName)
-    {
-        var playerNameSplits = playerName.Split(" ");
-        foreach (var split in playerNameSplits)
-        {
-            // Remove special characters (') and (-), then check if alphabet only
-            var sanitized = sanitizePattern.Replace(split, "");
-            if (!Regex.IsMatch(sanitized, @"^[A-Z][a-z]+$"))
-            {
-                return false;
-            }
-        }
-
-        return playerNameSplits.Length is 1 or 2;
     }
 }
