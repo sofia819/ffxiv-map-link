@@ -23,6 +23,8 @@ Note: this is my first attempt at C# and Dalamud plugins, so this is filled with
 #### Notes
 
 -   If the filter is empty or if all filter entries are disabled, it will watch all of the messages
+-   Player name of `Forename Surname` is expected
+-   This has only been tested on the Global EN version
 
 ## Commands
 
