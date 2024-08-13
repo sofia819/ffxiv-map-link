@@ -118,7 +118,6 @@ public class ConfigWindow : Window, IDisposable
                     {
                         configuration.Players.Remove(player.Key);
                         configuration.Save();
-                        ImGui.PopID();
                     }
 
                     // Enable player
