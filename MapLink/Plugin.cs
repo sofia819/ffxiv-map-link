@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using Dalamud.Game.Command;
 using Dalamud.Game.Text;
@@ -8,7 +8,7 @@ using Dalamud.Interface.Windowing;
 using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
-using Lumina.Excel.GeneratedSheets2;
+using Lumina.Excel.Sheets;
 using MapLink.Windows;
 
 namespace MapLink;
