@@ -8,7 +8,6 @@ using Dalamud.Interface.Windowing;
 using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
-using Lumina.Excel.Sheets;
 using MapLink.Windows;
 
 namespace MapLink;
@@ -109,13 +108,13 @@ public sealed class Plugin : IDalamudPlugin
         if (!Configuration.IsPluginEnabled)
             return;
 
-        // Filter Sonar and players
-        if (!ShouldFollowMessageFromSender(sender))
-            return;
-
         foreach (var payload in message.Payloads)
             if (payload is MapLinkPayload mapLinkPayload && ShouldFollowMapLink(mapLinkPayload))
             {
+                // Filter Sonar and players
+                if (!ShouldFollowMessageFromSender(sender))
+                    return;
+
                 GameGui.OpenMapWithMapLink(mapLinkPayload);
                 if (Configuration.IsLoggingEnabled)
                 {
@@ -133,11 +132,22 @@ public sealed class Plugin : IDalamudPlugin
         /*
          * 1. Check if there are any filtered players
          * 2. Check if all entries are disabled
-         * 3. Check filter
          */
-        return players.Keys.Count == 0
-            || players.Values.All(enabled => !enabled)
-            || (players.ContainsKey(sender.TextValue) && players[sender.TextValue]);
+        if (players.Keys.Count == 0 || players.Values.All(enabled => !enabled))
+        {
+            return true;
+        }
+
+        // 3. Check if player name exists in filter and is enabled
+        foreach (var playerKey in players.Keys)
+        {
+            if (sender.TextValue.Contains(playerKey))
+            {
+                return players[playerKey];
+            }
+        }
+
+        return false;
     }
 
     private bool ShouldFollowMapLink(MapLinkPayload payload)
