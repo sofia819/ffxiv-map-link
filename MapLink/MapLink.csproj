@@ -2,7 +2,7 @@
 <Project Sdk="Dalamud.NET.SDK/12.0.2">
 
     <PropertyGroup>
-        <Version>1.1.3</Version>
+        <Version>1.1.4</Version>
         <Description>Map Link</Description>
         <PackageProjectUrl>https://github.com/sofia819/ffxiv-map-link</PackageProjectUrl>
         <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
