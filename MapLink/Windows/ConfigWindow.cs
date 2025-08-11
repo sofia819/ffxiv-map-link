@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Numerics;
 using Dalamud.Interface;
 using Dalamud.Interface.Components;
 using Dalamud.Interface.Windowing;
-using ImGuiNET;
-using ImGui = ImGuiNET.ImGui;
+using Dalamud.Bindings.ImGui;
+using ImGui = Dalamud.Bindings.ImGui.ImGui;
 
 namespace MapLink.Windows;
 
