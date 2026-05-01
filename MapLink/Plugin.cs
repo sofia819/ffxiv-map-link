@@ -1,5 +1,4 @@
-using System;
-using System.Linq;
+using Dalamud.Game.Chat;
 using Dalamud.Game.Command;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
@@ -9,6 +8,8 @@ using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 using MapLink.Windows;
+using System;
+using System.Linq;
 
 namespace MapLink;
 
@@ -98,27 +99,23 @@ public sealed class Plugin : IDalamudPlugin
     }
 
     private void OnChatMessage(
-        XivChatType type,
-        int timestamp,
-        ref SeString sender,
-        ref SeString message,
-        ref bool isHandled
+        IChatMessage message
     )
     {
         if (!Configuration.IsPluginEnabled)
             return;
 
-        foreach (var payload in message.Payloads)
+        foreach (var payload in message.Message.Payloads)
             if (payload is MapLinkPayload mapLinkPayload && ShouldFollowMapLink(mapLinkPayload))
             {
                 // Filter Sonar and players
-                if (!ShouldFollowMessageFromSender(sender))
+                if (!ShouldFollowMessageFromSender(message.Sender))
                     return;
 
                 GameGui.OpenMapWithMapLink(mapLinkPayload);
                 if (Configuration.IsLoggingEnabled)
                 {
-                    ChatGui.Print($"{sender.TextValue} posts a map link", PluginName);
+                    ChatGui.Print($"{message.Sender.TextValue} posts a map link", PluginName);
                 }
             }
     }
